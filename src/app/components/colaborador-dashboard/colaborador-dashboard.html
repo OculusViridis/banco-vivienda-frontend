@@ -1,0 +1,204 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+  <div class="container">
+    <a class="navbar-brand fw-bold text-warning"><i class="bi bi-shield-lock"></i> Portal Colaboradores</a>
+    <button class="btn btn-outline-light btn-sm" (click)="cerrarSesion()">Cerrar Sesión</button>
+  </div>
+</nav>
+
+<div class="container mt-4">
+  <div class="row justify-content-center mb-5">
+    <div class="col-md-8">
+      <div class="card shadow-sm border-0">
+
+        <div class="row mb-5">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center bg-white p-3 rounded shadow-sm border-start border-warning border-5">
+        <h5 class="mb-0 text-secondary">Control de Cartera</h5>
+        <button class="btn btn-warning text-dark fw-bold" (click)="cargarReporteMorosidad()" [disabled]="cargandoReporte">
+          <i class="bi bi-exclamation-triangle"></i> Ver Pagos por Vencer
+        </button>
+      </div>
+
+      <div *ngIf="reportePagos" class="mt-3">
+        <div class="card shadow-sm border-0">
+          <div class="card-header bg-danger text-white fw-bold">
+            Alertas de Próximos Vencimientos (Próximos 15 días)
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-striped table-hover mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th>Cliente</th>
+                    <th>CUI</th>
+                    <th>No. Préstamo</th>
+                    <th>Saldo Pendiente</th>
+                    <th>Fecha Límite</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let pago of reportePagos">
+                    <td class="fw-bold">{{ pago.nombre_completo }}</td>
+                    <td>{{ pago.cui }}</td>
+                    <td>#{{ pago.id_prestamo }}</td>
+                    <td class="text-danger fw-bold">{{ pago.saldo_pendiente | currency:'GTQ':'symbol' }}</td>
+                    <td>
+                      <span class="badge bg-danger rounded-pill fs-6">
+                        {{ pago.fecha_proximo_pago | date:'dd/MM/yyyy' }}
+                      </span>
+                    </td>
+                  </tr>
+                  <tr *ngIf="reportePagos.length === 0">
+                    <td colspan="5" class="text-center py-4 text-success">
+                      <i class="bi bi-check-circle fs-3 d-block"></i>
+                      No hay pagos por vencer próximos.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+        <div class="card-body bg-light rounded">
+          <h5 class="mb-3">Buscar Cliente Básico</h5>
+          <form (ngSubmit)="buscarCliente()" class="d-flex">
+            <input 
+              type="text" 
+              class="form-control form-control-lg me-2" 
+              placeholder="Ingrese el CUI del cliente (Ej: 1234567890101)"
+              name="cuiBusqueda"
+              [(ngModel)]="cuiBusqueda"
+              required>
+            <button type="submit" class="btn btn-primary btn-lg px-4" [disabled]="!cuiBusqueda || cargando">
+              <span *ngIf="cargando" class="spinner-border spinner-border-sm me-2"></span>
+              Buscar
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="mensajeError" class="alert alert-danger text-center">
+    {{ mensajeError }}
+  </div>
+
+  <div *ngIf="datosCliente">
+    <div class="card shadow border-0 mb-4 border-start border-primary border-5">
+      <div class="card-body">
+        <h3 class="mb-0">{{ datosCliente.datos_personales.nombre_completo }}</h3>
+        <p class="text-muted mb-0">CUI: {{ datosCliente.datos_personales.cui }} | Correo: {{ datosCliente.datos_personales.correo }}</p>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-6 mb-4">
+        <div class="card shadow-sm h-100">
+          <div class="card-header bg-success text-white">Cuentas Registradas</div>
+          <ul class="list-group list-group-flush">
+            <li *ngFor="let cuenta of datosCliente.cuentas" class="list-group-item d-flex justify-content-between align-items-center">
+              <div>
+                <strong>{{ cuenta.numero_cuenta }}</strong> <br>
+                <small class="text-muted">{{ cuenta.tipo_cuenta }}</small>
+              </div>
+              <span class="fs-5 text-success">{{ cuenta.saldo | currency:'GTQ':'symbol' }}</span>
+            </li>
+            <li *ngIf="datosCliente.cuentas.length === 0" class="list-group-item text-muted">No posee cuentas.</li>
+          </ul>
+        </div>
+
+        <div class="row mt-2 mb-4">
+      <div class="col-12">
+        <div class="card shadow-sm border-0 border-top border-info border-4 bg-light">
+          <div class="card-body">
+            <h5 class="text-info mb-3"><i class="bi bi-file-earmark-text"></i> Ingresar Nuevo Trámite / Solicitud</h5>
+            
+            <form (ngSubmit)="enviarSolicitud()">
+              <div class="row align-items-end">
+                <div class="col-md-4 mb-3">
+                  <label class="form-label fw-bold small text-muted">Tipo de Producto</label>
+                  <select class="form-select" name="tipo_producto" [(ngModel)]="nuevaSolicitud.tipo_producto" required>
+                    <option value="" disabled selected>Seleccione el trámite...</option>
+                    <option value="Cuenta Ahorro">Apertura: Cuenta de Ahorro</option>
+                    <option value="Cuenta Monetaria">Apertura: Cuenta Monetaria</option>
+                    <option value="Prestamo Personal">Solicitud: Préstamo Personal</option>
+                    <option value="Tarjeta de Credito">Solicitud: Tarjeta de Crédito</option>
+                  </select>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                  <label class="form-label fw-bold small text-muted">Detalles o Justificación</label>
+                  <input type="text" class="form-control" name="detalle" [(ngModel)]="nuevaSolicitud.detalle" placeholder="Ej: Cliente solicita apertura de cuenta con depósito inicial de Q500" required>
+                </div>
+
+                <div class="col-md-2 mb-3">
+                  <button type="submit" class="btn btn-info text-white w-100 fw-bold" [disabled]="!nuevaSolicitud.tipo_producto || !nuevaSolicitud.detalle || enviandoSolicitud">
+                    <span *ngIf="enviandoSolicitud" class="spinner-border spinner-border-sm"></span>
+                    Registrar
+                  </button>
+                </div>
+              </div>
+            </form>
+
+            <div *ngIf="mensajeSolicitud" class="alert alert-success py-2 mt-2 mb-0 border-0 shadow-sm">
+              <i class="bi bi-check-circle-fill"></i> {{ mensajeSolicitud }}
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+      </div>
+
+      <div class="col-md-6 mb-4">
+        <div class="card shadow-sm h-100">
+          <div class="card-header bg-danger text-white">Obligaciones (Préstamos)</div>
+          <ul class="list-group list-group-flush">
+            <li *ngFor="let prestamo of datosCliente.prestamos" class="list-group-item">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <strong>Préstamo #{{ prestamo.id_prestamo }}</strong> <br>
+                  <span class="badge bg-warning text-dark">{{ prestamo.estado }}</span>
+                </div>
+                <div class="text-end">
+                  <span class="fs-5 text-danger">{{ prestamo.saldo_pendiente | currency:'GTQ':'symbol' }}</span><br>
+                  <button class="btn btn-sm btn-outline-primary mt-1" (click)="prepararPago(prestamo)">
+                    <i class="bi bi-cash-coin"></i> Abonar
+                  </button>
+                </div>
+              </div>
+
+              <div *ngIf="prestamoSeleccionado?.id_prestamo === prestamo.id_prestamo" class="mt-3 p-3 bg-light border rounded">
+                <h6 class="text-primary mb-3">Registrar Pago a Préstamo #{{ prestamo.id_prestamo }}</h6>
+                
+                <form (ngSubmit)="procesarPago()">
+                  <div class="input-group mb-2">
+                    <span class="input-group-text">Q</span>
+                    <input type="number" class="form-control" name="monto_pagado" [(ngModel)]="nuevoPago.monto_pagado" placeholder="Monto a pagar" required min="1">
+                    <button class="btn btn-success" type="submit" [disabled]="!nuevoPago.monto_pagado || procesandoPago">
+                      <span *ngIf="procesandoPago" class="spinner-border spinner-border-sm"></span>
+                      Confirmar
+                    </button>
+                  </div>
+                </form>
+
+                <div *ngIf="mensajePago" class="alert alert-success py-2 mb-0 mt-2 small">
+                  {{ mensajePago }}
+                </div>
+              </div>
+            </li>
+            <li *ngIf="datosCliente.prestamos.length === 0" class="list-group-item text-muted">No posee préstamos activos.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

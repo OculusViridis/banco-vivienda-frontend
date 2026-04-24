@@ -1,0 +1,53 @@
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6 col-lg-4">
+      
+      <div class="card shadow-lg border-0 rounded-lg mt-5">
+        <div class="card-header bg-primary text-white text-center">
+          <h3 class="font-weight-light my-2">Banco de Vivienda</h3>
+        </div>
+        
+        <div class="card-body p-4">
+          <div *ngIf="mensajeError" class="alert alert-danger text-center">
+            {{ mensajeError }}
+          </div>
+
+          <form (ngSubmit)="iniciarSesion()">
+            
+            <div class="form-floating mb-3">
+              <input 
+                type="text" 
+                class="form-control" 
+                id="inputUsername" 
+                placeholder="Usuario"
+                [(ngModel)]="credenciales.username"
+                name="username"
+                required>
+              <label for="inputUsername">Usuario</label>
+            </div>
+
+            <div class="form-floating mb-4">
+              <input 
+                type="password" 
+                class="form-control" 
+                id="inputPassword" 
+                placeholder="Contraseña"
+                [(ngModel)]="credenciales.password"
+                name="password"
+                required>
+              <label for="inputPassword">Contraseña</label>
+            </div>
+
+            <div class="d-grid gap-2 mt-4 mb-0">
+              <button class="btn btn-primary btn-lg" type="submit" [disabled]="!credenciales.username || !credenciales.password">
+                Ingresar
+              </button>
+            </div>
+
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
