@@ -7,7 +7,7 @@ import { Observable, tap } from 'rxjs';
 })
 export class AuthService {
   // La URL de tu servidor Node.js
-  private apiUrl = 'http://localhost:3000/api'; 
+  private apiUrl = 'https://banco-vivienda-api.onrender.com/api'; 
 
   constructor(private http: HttpClient) { }
 
